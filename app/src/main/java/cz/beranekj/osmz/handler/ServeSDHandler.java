@@ -1,7 +1,10 @@
 package cz.beranekj.osmz.handler;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Environment;
+import android.webkit.MimeTypeMap;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,7 +13,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
+import cz.beranekj.osmz.server.HttpMethod;
 import cz.beranekj.osmz.server.Request;
 import cz.beranekj.osmz.server.RequestHandler;
 import cz.beranekj.osmz.server.Response;
@@ -25,17 +33,30 @@ public class ServeSDHandler implements RequestHandler
     }
 
     @Override
+    public boolean shouldHandle(Request request)
+    {
+        return request.getMethod() == HttpMethod.GET;
+    }
+
+    @Override
     public void handle(Request request, Response response)
     {
         File dir = Environment.getExternalStorageDirectory();
         File file = new File(dir, request.getPath());
 
-        if (request.getPath().equals("/"))
+        if (file.isFile())
         {
-            this.serveIndex(response);
-            return;
+            this.serveFile(context, response, file);
         }
+        else if (file.isDirectory())
+        {
+            this.serveDirectory(response, file);
+        }
+        else response.setCode(404);
+    }
 
+    private void serveFile(Context context, Response response, File file)
+    {
         try
         {
             InputStream fileStream = new FileInputStream(file);
@@ -45,8 +66,14 @@ public class ServeSDHandler implements RequestHandler
 
             response.getBody().write(data);
 
-            response.getHeaders().put("Content-Type", "application/octet-stream");
-            response.getHeaders().put("Content-Disposition", "attachment; filename=" + file.getName());
+            String mimeType = getMimeType(file.getAbsolutePath());
+            if (mimeType == null || mimeType.isEmpty())
+            {
+                response.getHeaders().put("Content-Type", "application/octet-stream");
+                response.getHeaders().put("Content-Disposition", "attachment; filename=" + file.getName());
+            }
+            else response.getHeaders().put("Content-Type", mimeType);
+
             response.getHeaders().put("Content-Length", String.valueOf(file.length()));
         }
         catch (FileNotFoundException e)
@@ -57,6 +84,37 @@ public class ServeSDHandler implements RequestHandler
         {
             response.setCode(500);
         }
+    }
+    private void serveDirectory(Response response, File directory)
+    {
+        String root = new File(Environment.getExternalStorageDirectory(), "/").getAbsolutePath();
+        String html = "<html><head><title>" + this.stripRoot(root, directory.getAbsolutePath()) + "</title>";
+        html += "</head><body>";
+        html += "<h1>" + this.stripRoot(root, directory.getAbsolutePath()) + "</h1>";
+        html += "<ul>";
+
+        File[] files = directory.listFiles();
+        List<String> filePaths = new ArrayList<>();
+        for (File file : files)
+        {
+            String path = this.stripRoot(root, file.getAbsolutePath());
+            filePaths.add(path);
+        }
+
+        Collections.sort(filePaths);
+
+        for (String path : filePaths)
+        {
+            html += "<li><a href='" + path + "'>" + path + "</a></li>";
+        }
+
+        html += "</ul></body></html>";
+        response.getBody().write(html);
+    }
+
+    private String stripRoot(String root, String path)
+    {
+        return path.substring(root.length());
     }
 
     private void serveIndex(Response response)
@@ -94,5 +152,16 @@ public class ServeSDHandler implements RequestHandler
                 }
             }
         }
+    }
+
+    private static String getMimeType(String url)
+    {
+        String type = null;
+        String extension = MimeTypeMap.getFileExtensionFromUrl(url);
+        if (extension != null)
+        {
+            type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.toLowerCase());
+        }
+        return type;
     }
 }

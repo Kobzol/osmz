@@ -13,6 +13,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cz.beranekj.osmz.R;
 import cz.beranekj.osmz.handler.ServeSDHandler;
+import cz.beranekj.osmz.handler.UploadFileHandler;
 import cz.beranekj.osmz.server.HttpServer;
 import cz.beranekj.osmz.server.SocketServer;
 
@@ -39,6 +40,7 @@ public class HttpServerActivity extends Activity implements OnClickListener
         this.verifyStoragePermissions();
 
         this.server.addHandler(new ServeSDHandler(this.getApplicationContext()));
+        this.server.addHandler(new UploadFileHandler(this.getApplicationContext()));
     }
 
     /**
