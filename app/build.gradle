@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId "cz.beranekj.osmz"
-        minSdkVersion 9
+        minSdkVersion 19
         targetSdkVersion 25
     }
 

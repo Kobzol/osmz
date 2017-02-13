@@ -14,8 +14,9 @@ import butterknife.OnClick;
 import cz.beranekj.osmz.R;
 import cz.beranekj.osmz.handler.ServeSDHandler;
 import cz.beranekj.osmz.handler.UploadFileHandler;
-import cz.beranekj.osmz.server.HttpServer;
-import cz.beranekj.osmz.server.SocketServer;
+import cz.beranekj.osmz.server.BasicHttpHandler;
+import cz.beranekj.osmz.server.Server;
+import cz.beranekj.osmz.server.SingleThreadServer;
 
 
 public class HttpServerActivity extends Activity implements OnClickListener
@@ -26,8 +27,8 @@ public class HttpServerActivity extends Activity implements OnClickListener
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
-	private SocketServer socketServer = null;
-	private HttpServer server = new HttpServer();
+	private Server socketServer = null;
+	private BasicHttpHandler handler = new BasicHttpHandler();
 	
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -39,8 +40,8 @@ public class HttpServerActivity extends Activity implements OnClickListener
 
         this.verifyStoragePermissions();
 
-        this.server.addHandler(new ServeSDHandler(this.getApplicationContext()));
-        this.server.addHandler(new UploadFileHandler(this.getApplicationContext()));
+        this.handler.addHandler(new ServeSDHandler(this.getApplicationContext()));
+        this.handler.addHandler(new UploadFileHandler(this.getApplicationContext()));
     }
 
     /**
@@ -72,7 +73,7 @@ public class HttpServerActivity extends Activity implements OnClickListener
         {
             if (this.socketServer == null || !this.socketServer.isRunning())
             {
-                this.socketServer = new SocketServer(this.server);
+                this.socketServer = this.createServer();
                 this.socketServer.start();
                 Toast.makeText(this, "Server started", Toast.LENGTH_SHORT).show();
             }
@@ -81,20 +82,15 @@ public class HttpServerActivity extends Activity implements OnClickListener
         {
             if (this.socketServer != null && this.socketServer.isRunning())
             {
-                this.socketServer.close();
-                try
-                {
-                    this.socketServer.join();
-                }
-                catch (InterruptedException e)
-                {
-                    e.printStackTrace();
-                }
-
+                this.socketServer.stop();
                 this.socketServer = null;
-
                 Toast.makeText(this, "Server stopped", Toast.LENGTH_SHORT).show();
             }
 		}
 	}
+
+    private Server createServer()
+    {
+        return new SingleThreadServer(this.handler, 8080);
+    }
 }

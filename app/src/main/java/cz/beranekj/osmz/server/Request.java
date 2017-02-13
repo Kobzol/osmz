@@ -1,8 +1,6 @@
 package cz.beranekj.osmz.server;
 
-import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.Reader;
 import java.util.HashMap;
 
 public class Request
@@ -10,9 +8,9 @@ public class Request
     private final HttpMethod method;
     private final HashMap<String, String> headers;
     private final String path;
-    private final BufferedReader inputStream;
+    private final InputStream inputStream;
 
-    public Request(HttpMethod method, HashMap<String, String> headers, BufferedReader inputStream, String path)
+    public Request(HttpMethod method, HashMap<String, String> headers, InputStream inputStream, String path)
     {
         this.method = method;
         this.headers = headers;
@@ -35,7 +33,7 @@ public class Request
         return path;
     }
 
-    public BufferedReader getInputStream()
+    public InputStream getInputStream()
     {
         return this.inputStream;
     }

@@ -1,9 +1,7 @@
 package cz.beranekj.osmz.server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -12,7 +10,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class HttpServer implements HttpHandler
+import cz.beranekj.osmz.util.IOUtil;
+
+public class BasicHttpHandler implements HttpHandler
 {
     private final List<RequestHandler> handlers = new ArrayList<>();
 
@@ -24,12 +24,10 @@ public class HttpServer implements HttpHandler
     @Override
     public void handleConnection(InputStream input, OutputStream output)
     {
-        BufferedReader in = new BufferedReader(new InputStreamReader(input));
-
         Response response = new Response();
         try
         {
-            Request request = this.parseRequest(in);
+            Request request = this.parseRequest(input);
 
             boolean handled = false;
             for (RequestHandler handler : this.handlers)
@@ -58,6 +56,7 @@ public class HttpServer implements HttpHandler
         try
         {
             this.normalizeResponse(response);
+            this.writeHeaders(response, output);
             this.writeResponse(response, output);
         }
         catch (IOException e)
@@ -105,12 +104,12 @@ public class HttpServer implements HttpHandler
         }*/
     }
 
-    private void writeResponse(Response response, OutputStream output) throws IOException
+    private void writeHeaders(Response response, OutputStream output) throws IOException
     {
         PrintStream stream = new PrintStream(output);
         stream.print("HTTP/1.0 ");
         stream.print(response.getCode());
-        stream.println(" NA");
+        stream.println(" OK");
 
         for (String key : response.getHeaders().keySet())
         {
@@ -121,14 +120,16 @@ public class HttpServer implements HttpHandler
 
         stream.println();
         stream.flush();
-
+    }
+    private void writeResponse(Response response, OutputStream output) throws IOException
+    {
         output.write(response.getBody().getBuffer());
         output.flush();
     }
 
-    private Request parseRequest(BufferedReader input) throws IOException, ServerException
+    private Request parseRequest(InputStream input) throws IOException, ServerException
     {
-        String line = input.readLine();
+        String line = IOUtil.readLine(input);
         if (line == null)
         {
             throw new BadRequestException();
@@ -149,7 +150,7 @@ public class HttpServer implements HttpHandler
 
         while (true)
         {
-            line = input.readLine();
+            line = IOUtil.readLine(input);
             if (line == null || line.isEmpty())
             {
                 break;
