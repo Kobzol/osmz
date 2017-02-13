@@ -1,7 +1,9 @@
 package cz.beranekj.osmz.net.server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -136,7 +138,9 @@ public class HttpServer implements HttpHandler
 
     private Request parseRequest(InputStream input) throws IOException, ServerException
     {
-        String line = IOUtil.readLine(input);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+
+        String line = reader.readLine();
         if (line == null)
         {
             throw new BadRequestException();
@@ -157,7 +161,7 @@ public class HttpServer implements HttpHandler
 
         while (true)
         {
-            line = IOUtil.readLine(input);
+            line = reader.readLine();
             if (line == null || line.isEmpty())
             {
                 break;
