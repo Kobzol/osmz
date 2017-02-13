@@ -2,19 +2,21 @@ package cz.beranekj.osmz.util;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ByteBuffer
 {
-    private final List<Byte> buffer = new ArrayList<>();
+    private byte[] buffer = new byte[1024];
+    private int offset = 0;
 
     public void write(byte[] buffer, int offset, int length)
     {
-        for (int i = offset; i < offset + length; i++)
-        {
-            this.buffer.add(buffer[i]);
-        }
+        this.reallocate(length);
+        System.arraycopy(buffer, offset, this.buffer, this.offset, length);
+        this.offset += length;
     }
+
     public void write(byte[] buffer)
     {
         this.write(buffer, 0, buffer.length);
@@ -46,13 +48,16 @@ public class ByteBuffer
 
     public byte[] getBuffer()
     {
-        byte[] buffer = new byte[this.buffer.size()];
-        int i = 0;
-        for (Byte b : this.buffer)
-        {
-            buffer[i++] = b;
-        }
+        return this.buffer;
+    }
 
-        return buffer;
+    private void reallocate(int length)
+    {
+        if (length + this.offset > this.buffer.length)
+        {
+            byte[] newBuffer = new byte[Math.max(this.buffer.length * 2, length + this.offset)];
+            System.arraycopy(this.buffer, 0, newBuffer, 0, this.offset);
+            this.buffer = newBuffer;
+        }
     }
 }
