@@ -1,4 +1,4 @@
-package cz.beranekj.osmz.server;
+package cz.beranekj.osmz.net.server;
 
 import android.util.Log;
 
@@ -7,7 +7,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
 
-public class SingleThreadServer extends Server
+import cz.beranekj.osmz.net.http.HttpHandler;
+
+public class SingleThreadServer extends NetServer
 {
 	private ServerSocket serverSocket;
 	private final int port;
@@ -62,7 +64,7 @@ public class SingleThreadServer extends Server
             e.printStackTrace();
         }
 
-        // close thread
+        // wait for thread
         try
         {
             this.listenerThread.join();
@@ -79,7 +81,7 @@ public class SingleThreadServer extends Server
         {
         	Log.d("SERVER", "Creating Socket");
             this.serverSocket = new ServerSocket(port);
-            while (this.isRunning)
+            while (this.isRunning())
             {
             	Log.d("SERVER", "Socket Waiting for connection");
                 Socket s = serverSocket.accept();

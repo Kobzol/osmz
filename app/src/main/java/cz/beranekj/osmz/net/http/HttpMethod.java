@@ -1,4 +1,4 @@
-package cz.beranekj.osmz.server;
+package cz.beranekj.osmz.net.http;
 
 public enum HttpMethod
 {

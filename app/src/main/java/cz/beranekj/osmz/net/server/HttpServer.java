@@ -1,4 +1,4 @@
-package cz.beranekj.osmz.server;
+package cz.beranekj.osmz.net.server;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,9 +10,16 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cz.beranekj.osmz.net.http.BadRequestException;
+import cz.beranekj.osmz.net.http.HttpHandler;
+import cz.beranekj.osmz.net.http.HttpMethod;
+import cz.beranekj.osmz.net.http.Request;
+import cz.beranekj.osmz.net.http.RequestHandler;
+import cz.beranekj.osmz.net.http.Response;
+import cz.beranekj.osmz.net.http.ServerException;
 import cz.beranekj.osmz.util.IOUtil;
 
-public class BasicHttpHandler implements HttpHandler
+public class HttpServer implements HttpHandler
 {
     private final List<RequestHandler> handlers = new ArrayList<>();
 

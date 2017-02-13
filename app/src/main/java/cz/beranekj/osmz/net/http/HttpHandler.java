@@ -1,4 +1,4 @@
-package cz.beranekj.osmz.server;
+package cz.beranekj.osmz.net.http;
 
 import java.io.InputStream;
 import java.io.OutputStream;

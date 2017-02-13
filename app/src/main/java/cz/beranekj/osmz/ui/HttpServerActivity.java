@@ -9,14 +9,17 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
 
+import java.io.IOException;
+
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cz.beranekj.osmz.R;
-import cz.beranekj.osmz.handler.ServeSDHandler;
-import cz.beranekj.osmz.handler.UploadFileHandler;
-import cz.beranekj.osmz.server.BasicHttpHandler;
-import cz.beranekj.osmz.server.Server;
-import cz.beranekj.osmz.server.SingleThreadServer;
+import cz.beranekj.osmz.net.handler.ServeSDHandler;
+import cz.beranekj.osmz.net.handler.UploadFileHandler;
+import cz.beranekj.osmz.net.server.HttpServer;
+import cz.beranekj.osmz.net.server.MultiThreadServer;
+import cz.beranekj.osmz.net.server.NetServer;
+import cz.beranekj.osmz.net.server.SingleThreadServer;
 
 
 public class HttpServerActivity extends Activity implements OnClickListener
@@ -27,8 +30,8 @@ public class HttpServerActivity extends Activity implements OnClickListener
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
-	private Server socketServer = null;
-	private BasicHttpHandler handler = new BasicHttpHandler();
+	private NetServer netServer = null;
+	private HttpServer httpServer = new HttpServer();
 	
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -40,8 +43,8 @@ public class HttpServerActivity extends Activity implements OnClickListener
 
         this.verifyStoragePermissions();
 
-        this.handler.addHandler(new ServeSDHandler(this.getApplicationContext()));
-        this.handler.addHandler(new UploadFileHandler(this.getApplicationContext()));
+        this.httpServer.addHandler(new ServeSDHandler(this.getApplicationContext()));
+        this.httpServer.addHandler(new UploadFileHandler(this.getApplicationContext()));
     }
 
     /**
@@ -71,26 +74,33 @@ public class HttpServerActivity extends Activity implements OnClickListener
     {
 		if (v.getId() == R.id.button1)
         {
-            if (this.socketServer == null || !this.socketServer.isRunning())
+            if (this.netServer == null || !this.netServer.isRunning())
             {
-                this.socketServer = this.createServer();
-                this.socketServer.start();
-                Toast.makeText(this, "Server started", Toast.LENGTH_SHORT).show();
+                this.netServer = this.createServer();
+                this.netServer.start();
+                Toast.makeText(this, "NetServer started", Toast.LENGTH_SHORT).show();
             }
 		}
 		if (v.getId() == R.id.button2)
         {
-            if (this.socketServer != null && this.socketServer.isRunning())
+            if (this.netServer != null && this.netServer.isRunning())
             {
-                this.socketServer.stop();
-                this.socketServer = null;
-                Toast.makeText(this, "Server stopped", Toast.LENGTH_SHORT).show();
+                try
+                {
+                    this.netServer.stop();
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+                this.netServer = null;
+                Toast.makeText(this, "NetServer stopped", Toast.LENGTH_SHORT).show();
             }
 		}
 	}
 
-    private Server createServer()
+    private NetServer createServer()
     {
-        return new SingleThreadServer(this.handler, 8080);
+        return new MultiThreadServer(this.httpServer, 8080);
     }
 }

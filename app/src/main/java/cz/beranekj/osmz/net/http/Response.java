@@ -1,6 +1,8 @@
-package cz.beranekj.osmz.server;
+package cz.beranekj.osmz.net.http;
 
 import java.util.HashMap;
+
+import cz.beranekj.osmz.util.ByteBuffer;
 
 public class Response
 {

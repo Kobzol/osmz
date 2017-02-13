@@ -1,8 +1,6 @@
-package cz.beranekj.osmz.handler;
+package cz.beranekj.osmz.net.handler;
 
-import android.content.ContentResolver;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Environment;
 import android.webkit.MimeTypeMap;
 
@@ -15,13 +13,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
-import cz.beranekj.osmz.server.HttpMethod;
-import cz.beranekj.osmz.server.Request;
-import cz.beranekj.osmz.server.RequestHandler;
-import cz.beranekj.osmz.server.Response;
+import cz.beranekj.osmz.net.http.HttpMethod;
+import cz.beranekj.osmz.net.http.Request;
+import cz.beranekj.osmz.net.http.RequestHandler;
+import cz.beranekj.osmz.net.http.Response;
 
 public class ServeSDHandler implements RequestHandler
 {

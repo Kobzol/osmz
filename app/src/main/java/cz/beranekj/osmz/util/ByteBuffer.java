@@ -1,4 +1,4 @@
-package cz.beranekj.osmz.server;
+package cz.beranekj.osmz.util;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;

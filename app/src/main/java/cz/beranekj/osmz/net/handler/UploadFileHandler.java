@@ -1,4 +1,4 @@
-package cz.beranekj.osmz.handler;
+package cz.beranekj.osmz.net.handler;
 
 import android.content.Context;
 import android.os.Environment;
@@ -9,11 +9,11 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import cz.beranekj.osmz.server.HttpMethod;
-import cz.beranekj.osmz.server.Request;
-import cz.beranekj.osmz.server.RequestHandler;
-import cz.beranekj.osmz.server.Response;
-import cz.beranekj.osmz.server.ServerException;
+import cz.beranekj.osmz.net.http.HttpMethod;
+import cz.beranekj.osmz.net.http.Request;
+import cz.beranekj.osmz.net.http.RequestHandler;
+import cz.beranekj.osmz.net.http.Response;
+import cz.beranekj.osmz.net.http.ServerException;
 import cz.beranekj.osmz.util.ArrayIterator;
 import cz.beranekj.osmz.util.IOUtil;
 
