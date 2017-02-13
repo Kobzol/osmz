@@ -31,7 +31,7 @@ public class HttpServer implements HttpHandler
     }
 
     @Override
-    public void handleConnection(InputStream input, OutputStream output)
+    public void handleConnection(InputStream input, OutputStream output) throws IOException
     {
         Response response = new Response();
         try
@@ -62,26 +62,12 @@ public class HttpServer implements HttpHandler
             response.setCode(e.getCode());
         }
 
-        try
-        {
-            this.normalizeResponse(response);
-            this.writeHeaders(response, output);
-            this.writeResponse(response, output);
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        this.normalizeResponse(response);
+        this.writeHeaders(response, output);
+        this.writeResponse(response, output);
 
-        try
-        {
-            input.close();
-            output.close();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        input.close();
+        output.close();
     }
 
     private void normalizeResponse(Response response)

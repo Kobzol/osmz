@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import cz.beranekj.osmz.net.http.HttpMethod;
@@ -90,18 +92,17 @@ public class ServeSDHandler implements RequestHandler
         html += "<h1>" + this.stripRoot(root, directory.getAbsolutePath()) + "</h1>";
         html += "<ul>";
 
-        File[] files = directory.listFiles();
-        List<String> filePaths = new ArrayList<>();
+        List<File> files = Arrays.asList(directory.listFiles());
+        Collections.sort(files, (l, r) -> {
+            if (l.isDirectory() && !r.isDirectory()) return -1;
+            if (!l.isDirectory() && r.isDirectory()) return 1;
+
+            return l.getAbsolutePath().compareToIgnoreCase(r.getAbsolutePath());
+        });
+
         for (File file : files)
         {
             String path = this.stripRoot(root, file.getAbsolutePath());
-            filePaths.add(path);
-        }
-
-        Collections.sort(filePaths);
-
-        for (String path : filePaths)
-        {
             html += "<li><a href='" + path + "'>" + path + "</a></li>";
         }
 

@@ -105,42 +105,38 @@ public class MultiThreadServer extends NetServer
     @Override
     public void stop() throws IOException
     {
-        if (!this.isRunning()) return;
-
         this.isRunning = false;
 
-        // close clients
-        for (ClientThread thread : this.connections)
+        // close server
+        if (this.listenerSocket != null)
         {
-            thread.getSocket().close();
             try
             {
-                thread.join();
+                this.listenerSocket.close();
             }
-            catch (InterruptedException e)
+            catch (IOException e)
             {
                 e.printStackTrace();
             }
         }
 
-        // close server
-        try
+        // close clients
+        for (ClientThread thread : this.connections)
         {
-            this.listenerSocket.close();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
+            thread.getSocket().close();
         }
 
         // wait for thread
-        try
+        if (this.listenerThread != null)
         {
-            this.listenerThread.join();
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
+            try
+            {
+                this.listenerThread.join();
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -171,7 +167,6 @@ public class MultiThreadServer extends NetServer
         }
         finally
         {
-            this.listenerThread = null;
             this.isRunning = false;
         }
     }
@@ -179,20 +174,13 @@ public class MultiThreadServer extends NetServer
     private void createClientConnection(final Socket client)
     {
         ClientThread clientThread = new ClientThread(client, this.handler, this::removeThread);
+        clientThread.setDaemon(true);
         clientThread.start();
         this.connections.add(clientThread);
     }
 
-    private void removeThread(ClientThread clientThread)
+    private synchronized void removeThread(ClientThread clientThread)
     {
         this.connections.remove(clientThread);
-        try
-        {
-            clientThread.join();
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
     }
 }
