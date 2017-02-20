@@ -5,18 +5,27 @@ import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cz.beranekj.osmz.R;
 import cz.beranekj.osmz.net.handler.ServeSDHandler;
 import cz.beranekj.osmz.net.handler.UploadFileHandler;
 import cz.beranekj.osmz.net.server.HttpServer;
+import cz.beranekj.osmz.net.server.LogObserver;
 import cz.beranekj.osmz.net.server.MultiThreadServer;
 import cz.beranekj.osmz.net.server.NetServer;
 import cz.beranekj.osmz.net.server.SingleThreadServer;
@@ -24,6 +33,9 @@ import cz.beranekj.osmz.net.server.SingleThreadServer;
 
 public class HttpServerActivity extends Activity implements OnClickListener
 {
+    @BindView(R.id.log) TextView logView;
+    @BindView(R.id.reset_log) Button resetLogButton;
+
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -40,6 +52,8 @@ public class HttpServerActivity extends Activity implements OnClickListener
         setContentView(R.layout.activity_http_server);
 
         ButterKnife.bind(this);
+
+        this.logView.setMovementMethod(new ScrollingMovementMethod());
 
         this.verifyStoragePermissions();
 
@@ -99,8 +113,28 @@ public class HttpServerActivity extends Activity implements OnClickListener
 		}
 	}
 
+    @OnClick(R.id.reset_log)
+    public void onResetLogClicked()
+    {
+        this.logView.setText("");
+    }
+
     private NetServer createServer()
     {
-        return new MultiThreadServer(this.httpServer, 8080);
+        NetServer server = new MultiThreadServer(this.httpServer, 8080);
+        server.getLog().addListener(message -> runOnUiThread(() -> this.logMessage(message)));
+
+        return server;
+    }
+
+    private void logMessage(String message)
+    {
+        message = this.formatDate(new GregorianCalendar(), "hh:mm:ss") + ": " + message;
+        this.logView.setText(this.logView.getText().toString() + "\n" + message);
+    }
+
+    private String formatDate(Calendar date, String format)
+    {
+        return new SimpleDateFormat(format).format(date.getTime());
     }
 }

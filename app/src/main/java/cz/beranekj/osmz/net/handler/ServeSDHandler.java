@@ -21,6 +21,7 @@ import cz.beranekj.osmz.net.http.HttpMethod;
 import cz.beranekj.osmz.net.http.Request;
 import cz.beranekj.osmz.net.http.RequestHandler;
 import cz.beranekj.osmz.net.http.Response;
+import cz.beranekj.osmz.net.server.ServerLog;
 
 public class ServeSDHandler implements RequestHandler
 {
@@ -38,23 +39,28 @@ public class ServeSDHandler implements RequestHandler
     }
 
     @Override
-    public void handle(Request request, Response response)
+    public void handle(Request request, Response response, ServerLog log)
     {
         File dir = Environment.getExternalStorageDirectory();
         File file = new File(dir, request.getPath());
 
         if (file.isFile())
         {
-            this.serveFile(context, response, file);
+            this.serveFile(context, response, file, log);
         }
         else if (file.isDirectory())
         {
+            log.log("Serving directory " + file.getAbsolutePath());
             this.serveDirectory(response, file);
         }
-        else response.setCode(404);
+        else
+        {
+            log.log("Path not found: " + request.getPath());
+            response.setCode(404);
+        }
     }
 
-    private void serveFile(Context context, Response response, File file)
+    private void serveFile(Context context, Response response, File file, ServerLog log)
     {
         try
         {
@@ -73,10 +79,13 @@ public class ServeSDHandler implements RequestHandler
             }
             else response.getHeaders().put("Content-Type", mimeType);
 
+            log.log("Serving file " + file.getAbsolutePath());
+
             response.getHeaders().put("Content-Length", String.valueOf(file.length()));
         }
         catch (FileNotFoundException e)
         {
+            log.log("File not found " + file.getAbsolutePath());
             response.setCode(404);
         }
         catch (IOException e)

@@ -16,6 +16,7 @@ import cz.beranekj.osmz.net.http.Request;
 import cz.beranekj.osmz.net.http.RequestHandler;
 import cz.beranekj.osmz.net.http.Response;
 import cz.beranekj.osmz.net.http.ServerException;
+import cz.beranekj.osmz.net.server.ServerLog;
 import cz.beranekj.osmz.util.ArrayIterator;
 import cz.beranekj.osmz.util.IOUtil;
 
@@ -35,7 +36,7 @@ public class UploadFileHandler implements RequestHandler
     }
 
     @Override
-    public void handle(Request request, Response response) throws IOException, ServerException
+    public void handle(Request request, Response response, ServerLog log) throws IOException, ServerException
     {
         String filePath = "";
         Pattern contentPattern = Pattern.compile("Content-Disposition: .* filename=\"(.*)\"");
@@ -69,6 +70,7 @@ public class UploadFileHandler implements RequestHandler
             throw new ServerException(400, "Bad request body");
         }
 
+        log.log("Uploading file: " + filePath);
         byte[] content = this.readUploadContent(request, iterator);
         this.writeFile(content, filePath);
         response.setCode(200);

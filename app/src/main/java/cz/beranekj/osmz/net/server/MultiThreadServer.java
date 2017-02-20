@@ -13,38 +13,19 @@ import cz.beranekj.osmz.net.http.HttpHandler;
 
 public class MultiThreadServer extends NetServer
 {
-    private class ConnectionData
-    {
-        private final Thread thread;
-        private final Socket socket;
-
-        ConnectionData(Thread thread, Socket socket)
-        {
-            this.thread = thread;
-            this.socket = socket;
-        }
-
-        public Thread getThread()
-        {
-            return this.thread;
-        }
-
-        public Socket getSocket()
-        {
-            return this.socket;
-        }
-    }
     private class ClientThread extends Thread
     {
         private final Socket socket;
         private final HttpHandler handler;
         private final Consumer<ClientThread> onExit;
+        private final ServerLog log;
 
-        private ClientThread(Socket socket, HttpHandler handler, Consumer<ClientThread> onExit)
+        private ClientThread(Socket socket, HttpHandler handler, Consumer<ClientThread> onExit, ServerLog log)
         {
             this.socket = socket;
             this.handler = handler;
             this.onExit = onExit;
+            this.log = log;
         }
 
         @Override
@@ -52,7 +33,7 @@ public class MultiThreadServer extends NetServer
         {
             try
             {
-                this.handler.handleConnection(this.socket.getInputStream(), this.socket.getOutputStream());
+                this.handler.handleConnection(this.socket.getInputStream(), this.socket.getOutputStream(), this.log);
                 this.socket.close();
             }
             catch (IOException e)
@@ -100,6 +81,8 @@ public class MultiThreadServer extends NetServer
         this.listenerThread.start();
 
         this.isRunning = true;
+
+        this.log.log("Server started");
     }
 
     @Override
@@ -138,6 +121,8 @@ public class MultiThreadServer extends NetServer
                 e.printStackTrace();
             }
         }
+
+        this.log.log("Server stopped");
     }
 
     private void listenerLoop()
@@ -151,6 +136,8 @@ public class MultiThreadServer extends NetServer
                 Log.d("SERVER", "Socket Waiting for connection");
                 Socket client = this.listenerSocket.accept();
                 Log.d("SERVER", "Socket Accepted, thread created");
+
+                this.log.log("Client accepted: " + client.getRemoteSocketAddress().toString());
 
                 this.createClientConnection(client);
             }
@@ -173,7 +160,7 @@ public class MultiThreadServer extends NetServer
 
     private void createClientConnection(final Socket client)
     {
-        ClientThread clientThread = new ClientThread(client, this.handler, this::removeThread);
+        ClientThread clientThread = new ClientThread(client, this.handler, this::removeThread, this.log);
         clientThread.setDaemon(true);
         clientThread.start();
         this.connections.add(clientThread);

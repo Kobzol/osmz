@@ -8,6 +8,7 @@ public abstract class NetServer
 {
     protected boolean isRunning = false;
     protected final HttpHandler handler;
+    protected final ServerLog log = new ServerLog();
 
     public NetServer(HttpHandler handler)
     {
@@ -20,5 +21,10 @@ public abstract class NetServer
     public boolean isRunning()
     {
         return this.isRunning;
+    }
+
+    public ServerLog getLog()
+    {
+        return this.log;
     }
 }

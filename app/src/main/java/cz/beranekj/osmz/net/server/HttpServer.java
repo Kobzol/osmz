@@ -31,7 +31,7 @@ public class HttpServer implements HttpHandler
     }
 
     @Override
-    public void handleConnection(InputStream input, OutputStream output) throws IOException
+    public void handleConnection(InputStream input, OutputStream output, ServerLog log) throws IOException
     {
         Response response = new Response();
         try
@@ -43,7 +43,7 @@ public class HttpServer implements HttpHandler
             {
                 if (handler.shouldHandle(request))
                 {
-                    handler.handle(request, response);
+                    handler.handle(request, response, log);
                     handled = true;
                 }
             }

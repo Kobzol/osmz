@@ -88,7 +88,7 @@ public class SingleThreadServer extends NetServer
                 this.sockets.add(s);
                 Log.d("SERVER", "Socket Accepted");
 
-                this.handler.handleConnection(s.getInputStream(), s.getOutputStream());
+                this.handler.handleConnection(s.getInputStream(), s.getOutputStream(), this.log);
 	            
                 s.close();
                 this.sockets.remove(s);
