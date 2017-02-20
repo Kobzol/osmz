@@ -30,9 +30,11 @@ import cz.beranekj.osmz.net.server.HttpServer;
 import cz.beranekj.osmz.net.server.MultiThreadServer;
 import cz.beranekj.osmz.net.server.NetServer;
 import cz.beranekj.osmz.renderscript.RenderscriptManager;
+import cz.beranekj.osmz.util.SubscriptionManager;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 
 
-public class HttpServerActivity extends Activity implements OnClickListener
+public class HttpServerActivity extends BaseActivity implements OnClickListener
 {
     @BindView(R.id.log) TextView logView;
     @BindView(R.id.reset_log) Button resetLogButton;
@@ -46,7 +48,7 @@ public class HttpServerActivity extends Activity implements OnClickListener
 
 	private NetServer netServer = null;
 	private HttpServer httpServer = new HttpServer();
-    private final RenderscriptManager rsManager = new RenderscriptManager();
+    private final SubscriptionManager subscriptionManager = new SubscriptionManager();
 	
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -54,7 +56,8 @@ public class HttpServerActivity extends Activity implements OnClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_http_server);
 
-        ButterKnife.bind(this);
+        this.bind();
+        this.getApp().getInjector().inject(this);
 
         this.logView.setMovementMethod(new ScrollingMovementMethod());
 
@@ -62,8 +65,6 @@ public class HttpServerActivity extends Activity implements OnClickListener
 
         this.httpServer.addHandler(new ServeSDHandler(this.getApplicationContext()));
         this.httpServer.addHandler(new UploadFileHandler(this.getApplicationContext()));
-
-        this.rsManager.init(this);
     }
 
     /**
@@ -73,12 +74,8 @@ public class HttpServerActivity extends Activity implements OnClickListener
      */
     public void verifyStoragePermissions()
     {
-        // Check if we have write permission
-        int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        if (permission != PackageManager.PERMISSION_GRANTED)
+        if (!this.hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE))
         {
-            // We don't have permission so prompt the user
             ActivityCompat.requestPermissions(
                     this,
                     PERMISSIONS_STORAGE,
@@ -114,6 +111,7 @@ public class HttpServerActivity extends Activity implements OnClickListener
                 }
                 this.netServer = null;
                 Toast.makeText(this, "NetServer stopped", Toast.LENGTH_SHORT).show();
+                this.subscriptionManager.unsubscribe();
             }
 		}
 	}
@@ -127,7 +125,9 @@ public class HttpServerActivity extends Activity implements OnClickListener
     private NetServer createServer()
     {
         NetServer server = new MultiThreadServer(this.httpServer, 8080);
-        server.getLog().addListener(message -> runOnUiThread(() -> this.logMessage(message)));
+        this.subscriptionManager.add(server.getLog().onMessageLogged()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(this::logMessage));
 
         return server;
     }
@@ -141,12 +141,5 @@ public class HttpServerActivity extends Activity implements OnClickListener
     private String formatDate(Calendar date, String format)
     {
         return new SimpleDateFormat(format).format(date.getTime());
-    }
-
-    private Bitmap loadBitmap(int resource)
-    {
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        return BitmapFactory.decodeResource(getResources(), resource, options);
     }
 }
