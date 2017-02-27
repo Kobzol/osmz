@@ -1,17 +1,10 @@
 package cz.beranekj.osmz.ui;
 
-import android.Manifest;
-import android.app.Activity;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,15 +14,14 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cz.beranekj.osmz.R;
+import cz.beranekj.osmz.net.handler.MotionJpegHandler;
 import cz.beranekj.osmz.net.handler.ServeSDHandler;
 import cz.beranekj.osmz.net.handler.UploadFileHandler;
-import cz.beranekj.osmz.net.server.HttpServer;
+import cz.beranekj.osmz.net.http.HttpServer;
 import cz.beranekj.osmz.net.server.MultiThreadServer;
 import cz.beranekj.osmz.net.server.NetServer;
-import cz.beranekj.osmz.renderscript.RenderscriptManager;
 import cz.beranekj.osmz.util.SubscriptionManager;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 
@@ -38,13 +30,6 @@ public class HttpServerActivity extends BaseActivity implements OnClickListener
 {
     @BindView(R.id.log) TextView logView;
     @BindView(R.id.reset_log) Button resetLogButton;
-    @BindView(R.id.img) ImageView img;
-
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    private static String[] PERMISSIONS_STORAGE = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-    };
 
 	private NetServer netServer = null;
 	private HttpServer httpServer = new HttpServer();
@@ -61,27 +46,9 @@ public class HttpServerActivity extends BaseActivity implements OnClickListener
 
         this.logView.setMovementMethod(new ScrollingMovementMethod());
 
-        this.verifyStoragePermissions();
-
+        this.httpServer.addHandler(new MotionJpegHandler(this.getApp()));
         this.httpServer.addHandler(new ServeSDHandler(this.getApplicationContext()));
         this.httpServer.addHandler(new UploadFileHandler(this.getApplicationContext()));
-    }
-
-    /**
-     * Checks if the app has permission to write to device storage
-     *
-     * If the app does not has permission then the user will be prompted to grant permissions
-     */
-    public void verifyStoragePermissions()
-    {
-        if (!this.hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE))
-        {
-            ActivityCompat.requestPermissions(
-                    this,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
     }
 
 	@Override
@@ -99,7 +66,7 @@ public class HttpServerActivity extends BaseActivity implements OnClickListener
 		}
 		if (v.getId() == R.id.button2)
         {
-            if (this.netServer != null && this.netServer.isRunning())
+            if (this.netServer != null)
             {
                 try
                 {
@@ -109,6 +76,9 @@ public class HttpServerActivity extends BaseActivity implements OnClickListener
                 {
                     e.printStackTrace();
                 }
+
+                this.logMessage("Server stopped");
+
                 this.netServer = null;
                 Toast.makeText(this, "NetServer stopped", Toast.LENGTH_SHORT).show();
                 this.subscriptionManager.unsubscribe();
@@ -124,7 +94,7 @@ public class HttpServerActivity extends BaseActivity implements OnClickListener
 
     private NetServer createServer()
     {
-        NetServer server = new MultiThreadServer(this.httpServer, 8080, 2);
+        NetServer server = new MultiThreadServer(this.httpServer, 8080, 15);
         this.subscriptionManager.add(server.getLog().onMessageLogged()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(this::logMessage));

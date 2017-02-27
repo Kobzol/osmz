@@ -9,11 +9,6 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".ui.HttpServerActivity" >
-    <ImageView
-        android:id="@+id/img"
-        android:src="@drawable/ic_launcher"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
     <Button
         android:id="@+id/button1"
         android:layout_width="wrap_content"

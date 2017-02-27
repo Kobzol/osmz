@@ -28,10 +28,6 @@ import cz.beranekj.osmz.renderscript.RenderscriptManager;
 
 public class FaceBlurActivity extends BaseActivity
 {
-    private static String[] PERMISSION_CAMERA = {
-            Manifest.permission.CAMERA
-    };
-
     @BindView(R.id.container) ViewGroup container;
     @BindView(R.id.surface) SurfaceView surface;
     @BindView(R.id.img) ImageView img;
@@ -49,8 +45,6 @@ public class FaceBlurActivity extends BaseActivity
 
         this.bind();
         this.getApp().getInjector().inject(this);
-
-        this.verifyCameraPermissions();
 
         this.camera = this.openCamera();
         this.preview = new CameraPreview(this, this.surface, img, this.renderscriptManager, this.camera);
@@ -74,18 +68,6 @@ public class FaceBlurActivity extends BaseActivity
         {
             this.camera = this.openCamera();
             this.preview = new CameraPreview(this, this.surface, img, this.renderscriptManager, this.camera);
-        }
-    }
-
-    private void verifyCameraPermissions()
-    {
-        if (!this.hasPermission(Manifest.permission.CAMERA))
-        {
-            ActivityCompat.requestPermissions(
-                    this,
-                    PERMISSION_CAMERA,
-                    1
-            );
         }
     }
 

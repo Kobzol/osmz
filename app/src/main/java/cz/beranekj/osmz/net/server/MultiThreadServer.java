@@ -1,12 +1,10 @@
 package cz.beranekj.osmz.net.server;
 
-import android.app.ExpandableListActivity;
 import android.util.Log;
 
 import com.annimon.stream.function.Consumer;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -97,7 +95,6 @@ public class MultiThreadServer extends NetServer
     public void stop() throws IOException
     {
         this.isRunning = false;
-        this.log.log("Server stopped");
 
         // close server
         if (this.listenerSocket != null)

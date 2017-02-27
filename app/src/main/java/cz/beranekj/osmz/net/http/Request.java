@@ -1,5 +1,7 @@
 package cz.beranekj.osmz.net.http;
 
+import android.net.Uri;
+
 import java.io.InputStream;
 import java.util.HashMap;
 
@@ -9,6 +11,7 @@ public class Request
     private final HashMap<String, String> headers;
     private final String path;
     private final InputStream inputStream;
+    private final Uri uri;
 
     public Request(HttpMethod method, HashMap<String, String> headers, InputStream inputStream, String path)
     {
@@ -16,6 +19,7 @@ public class Request
         this.headers = headers;
         this.inputStream = inputStream;
         this.path = path;
+        this.uri = Uri.parse(path);
     }
 
     public HttpMethod getMethod()
@@ -36,5 +40,10 @@ public class Request
     public InputStream getInputStream()
     {
         return this.inputStream;
+    }
+
+    public Uri getUri()
+    {
+        return this.uri;
     }
 }

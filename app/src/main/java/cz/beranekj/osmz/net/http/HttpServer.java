@@ -1,4 +1,4 @@
-package cz.beranekj.osmz.net.server;
+package cz.beranekj.osmz.net.http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,6 +19,7 @@ import cz.beranekj.osmz.net.http.Request;
 import cz.beranekj.osmz.net.http.RequestHandler;
 import cz.beranekj.osmz.net.http.Response;
 import cz.beranekj.osmz.net.http.ServerException;
+import cz.beranekj.osmz.net.server.ServerLog;
 import cz.beranekj.osmz.util.IOUtil;
 
 public class HttpServer implements HttpHandler
@@ -33,7 +34,7 @@ public class HttpServer implements HttpHandler
     @Override
     public void handleConnection(InputStream input, OutputStream output, ServerLog log) throws IOException
     {
-        Response response = new Response();
+        Response response = new Response(output);
         try
         {
             Request request = this.parseRequest(input);
@@ -45,6 +46,7 @@ public class HttpServer implements HttpHandler
                 {
                     handler.handle(request, response, log);
                     handled = true;
+                    break;
                 }
             }
 
@@ -93,10 +95,6 @@ public class HttpServer implements HttpHandler
         {
             response.getHeaders().put("Connection", "Close");
         }
-        /*if (!response.getHeaders().containsKey("Content-Encoding"))
-        {
-            response.getHeaders().put("Content-Encoding", "gzip");
-        }*/
     }
 
     private void writeHeaders(Response response, OutputStream output) throws IOException

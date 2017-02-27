@@ -1,5 +1,6 @@
 package cz.beranekj.osmz.net.http;
 
+import java.io.OutputStream;
 import java.util.HashMap;
 
 import cz.beranekj.osmz.util.ByteBuffer;
@@ -9,6 +10,12 @@ public class Response
     private int code = 200;
     private HashMap<String, String> headers = new HashMap<>();
     private ByteBuffer body = new ByteBuffer();
+    private final OutputStream outputStream;
+
+    public Response(OutputStream outputStream)
+    {
+        this.outputStream = outputStream;
+    }
 
     public int getCode()
     {
@@ -28,5 +35,10 @@ public class Response
     public ByteBuffer getBody()
     {
         return body;
+    }
+
+    public OutputStream getOutputStream()
+    {
+        return this.outputStream;
     }
 }
