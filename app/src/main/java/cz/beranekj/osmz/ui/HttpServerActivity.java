@@ -124,7 +124,7 @@ public class HttpServerActivity extends BaseActivity implements OnClickListener
 
     private NetServer createServer()
     {
-        NetServer server = new MultiThreadServer(this.httpServer, 8080);
+        NetServer server = new MultiThreadServer(this.httpServer, 8080, 2);
         this.subscriptionManager.add(server.getLog().onMessageLogged()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(this::logMessage));
