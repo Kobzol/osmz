@@ -60,7 +60,10 @@ public class CameraFrameListener implements Camera.PreviewCallback
             this.stopPreview();
         }
 
-        this.buffer = new byte[3110400];//camParams.getPreviewSize().width * camParams.getPreviewSize().height * (ImageFormat.getBitsPerPixel(camParams.getPreviewFormat()) / 8)];
+        int byteCount = size.width * size.height;
+        byteCount *= (ImageFormat.getBitsPerPixel(camParams.getPreviewFormat()) / 8.0);
+
+        this.buffer = new byte[byteCount];
         this.camera.addCallbackBuffer(this.buffer);
         this.camera.setPreviewCallbackWithBuffer(this);
         this.camera.startPreview();

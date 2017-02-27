@@ -17,14 +17,14 @@
         <activity
             android:name=".ui.HttpServerActivity"
             android:label="@string/activity_http_server_title">
-        </activity>
-        <activity
-            android:name=".ui.FaceBlurActivity"
-            android:label="@string/activity_face_blur_title">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.FaceBlurActivity"
+            android:label="@string/activity_face_blur_title">
         </activity>
     </application>
 </manifest>
