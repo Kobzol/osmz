@@ -9,6 +9,8 @@ import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import com.google.android.gms.common.SupportErrorDialogFragment;
+
 import java.io.ByteArrayOutputStream;
 
 import io.reactivex.Observable;
@@ -19,19 +21,23 @@ import static android.content.Context.WINDOW_SERVICE;
 
 public class CameraFrameListener implements Camera.PreviewCallback
 {
-    private final Camera camera;
+    private Camera camera;
     private final Context context;
+    private final boolean convertToJpeg;
 
     private byte[] buffer = null;
-    private boolean previewActive = false;
 
+    private boolean previewActive = false;
     private byte[] lastFrame = null;
     private Subject<byte[]> frameStream = PublishSubject.create();
 
-    public CameraFrameListener(Context context, Camera camera)
+    private Camera.Size previewSize = null;
+
+    public CameraFrameListener(Context context, Camera camera, boolean convertToJpeg)
     {
         this.context = context;
         this.camera = camera;
+        this.convertToJpeg = convertToJpeg;
     }
 
     public Observable<byte[]> getFrameStream()
@@ -46,6 +52,8 @@ public class CameraFrameListener implements Camera.PreviewCallback
         camParams.setPreviewSize(size.width, size.height);
         this.modifyCameraParams(this.camera, camParams);
         this.camera.setParameters(camParams);
+
+        this.previewSize = this.camera.getParameters().getPreviewSize();
 
         if (this.previewActive)
         {
@@ -77,11 +85,23 @@ public class CameraFrameListener implements Camera.PreviewCallback
     {
         return this.lastFrame;
     }
+    public Camera.Size getPreviewSize()
+    {
+        return this.previewSize;
+    }
+    public boolean isPreviewActive()
+    {
+        return this.previewActive;
+    }
 
     @Override
     public void onPreviewFrame(byte[] data, Camera camera)
     {
-        data = this.convertToJpeg(data);
+        if (this.convertToJpeg)
+        {
+            data = this.convertToJpeg(data);
+        }
+
         this.lastFrame = data;
         this.frameStream.onNext(data);
         this.camera.addCallbackBuffer(this.buffer);
@@ -89,27 +109,23 @@ public class CameraFrameListener implements Camera.PreviewCallback
 
     private void modifyCameraParams(Camera camera, Camera.Parameters parameters)
     {
-        int width = parameters.getPreviewSize().width;
-        int height = parameters.getPreviewSize().height;
-
         Display display = ((WindowManager) this.context.getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
 
-        if (display.getRotation() == Surface.ROTATION_90)
+        if (display.getRotation() == Surface.ROTATION_0)
         {
-            parameters.setPreviewSize(width, height);
+            parameters.set("orientation", "portrait");
+            camera.setDisplayOrientation(90);
         }
 
         if (display.getRotation() == Surface.ROTATION_270)
         {
-            parameters.setPreviewSize(width, height);
             camera.setDisplayOrientation(180);
         }
     }
 
     private byte[] convertToJpeg(byte[] data)
     {
-        Camera.Parameters parameters = this.camera.getParameters();
-        Camera.Size size = parameters.getPreviewSize();
+        Camera.Size size = this.previewSize;
 
         YuvImage image = new YuvImage(data, ImageFormat.NV21, size.width, size.height, null);
         Rect rectangle = new Rect();

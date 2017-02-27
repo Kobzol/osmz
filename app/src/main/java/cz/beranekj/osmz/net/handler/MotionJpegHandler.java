@@ -40,7 +40,7 @@ public class MotionJpegHandler implements RequestHandler
     public void handle(Request request, Response response, ServerLog log) throws IOException, ServerException
     {
         Camera camera = this.openCamera(request);
-        CameraFrameListener listener = new CameraFrameListener(this.application.getApplicationContext(), camera);
+        CameraFrameListener listener = new CameraFrameListener(this.application.getApplicationContext(), camera, true);
         listener.startPreview();
 
         String boundary = "mjpeg--boundary--mjpeg";
