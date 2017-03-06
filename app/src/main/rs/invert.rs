@@ -1,5 +1,5 @@
 #pragma version(1)
-#pragma rs java_package_name(cz.beranekj.osmz.renderscript)
+#pragma rs java_package_name(cz.beranekj.osmz2.renderscript)
 
 uchar4 RS_KERNEL invert(uchar4 in, uint32_t x, uint32_t y)
 {
