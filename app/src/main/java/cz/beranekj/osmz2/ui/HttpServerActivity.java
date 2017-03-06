@@ -22,6 +22,7 @@ import cz.beranekj.osmz2.net.handler.UploadFileHandler;
 import cz.beranekj.osmz2.net.http.HttpServer;
 import cz.beranekj.osmz2.net.server.MultiThreadServer;
 import cz.beranekj.osmz2.net.server.NetServer;
+import cz.beranekj.osmz2.service.ServerService;
 import cz.beranekj.osmz2.util.SubscriptionManager;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 
@@ -46,9 +47,9 @@ public class HttpServerActivity extends BaseActivity implements OnClickListener
 
         this.logView.setMovementMethod(new ScrollingMovementMethod());
 
-        this.httpServer.addHandler(new MotionJpegHandler(this.getApp()));
+        /*this.httpServer.addHandler(new MotionJpegHandler(this.getApp()));
         this.httpServer.addHandler(new ServeSDHandler(this.getApplicationContext()));
-        this.httpServer.addHandler(new UploadFileHandler(this.getApplicationContext()));
+        this.httpServer.addHandler(new UploadFileHandler(this.getApplicationContext()));*/
     }
 
 	@Override
@@ -57,16 +58,18 @@ public class HttpServerActivity extends BaseActivity implements OnClickListener
     {
 		if (v.getId() == R.id.button1)
         {
-            if (this.netServer == null || !this.netServer.isRunning())
+            ServerService.startServerAction(this);
+            /*if (this.netServer == null || !this.netServer.isRunning())
             {
                 this.netServer = this.createServer();
                 this.netServer.start();
                 Toast.makeText(this, "NetServer started", Toast.LENGTH_SHORT).show();
-            }
+            }*/
 		}
 		if (v.getId() == R.id.button2)
         {
-            if (this.netServer != null)
+            ServerService.stopServerAction(this);
+            /*if (this.netServer != null)
             {
                 try
                 {
@@ -82,7 +85,7 @@ public class HttpServerActivity extends BaseActivity implements OnClickListener
                 this.netServer = null;
                 Toast.makeText(this, "NetServer stopped", Toast.LENGTH_SHORT).show();
                 this.subscriptionManager.unsubscribe();
-            }
+            }*/
 		}
 	}
 
