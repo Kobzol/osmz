@@ -81,7 +81,7 @@ public class HttpServer implements HttpHandler
 
         if (!response.getHeaders().containsKey("Content-Length"))
         {
-            response.getHeaders().put("Content-Length", String.valueOf(response.getBody().getBuffer().length));
+            response.getHeaders().put("Content-Length", String.valueOf(response.getBody().getSize()));
         }
         if (!response.getHeaders().containsKey("Connection"))
         {

@@ -5,17 +5,16 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
 import android.os.IBinder;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 
 import java.io.IOException;
 
 import cz.beranekj.osmz2.R;
 import cz.beranekj.osmz2.app.Application;
+import cz.beranekj.osmz2.net.handler.command.CommandExecHandler;
 import cz.beranekj.osmz2.net.handler.MotionJpegHandler;
 import cz.beranekj.osmz2.net.handler.ServeSDHandler;
 import cz.beranekj.osmz2.net.handler.UploadFileHandler;
@@ -100,6 +99,7 @@ public class ServerService extends Service
 
         this.httpServer = new HttpServer();
         this.httpServer.addHandler(new MotionJpegHandler((Application) this.getApplication()));
+        this.httpServer.addHandler(new CommandExecHandler((Application) this.getApplication()));
         this.httpServer.addHandler(new ServeSDHandler(this.getApplicationContext()));
         this.httpServer.addHandler(new UploadFileHandler(this.getApplicationContext()));
 

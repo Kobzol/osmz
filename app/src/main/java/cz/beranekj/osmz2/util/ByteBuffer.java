@@ -47,6 +47,10 @@ public class ByteBuffer
     {
         return this.buffer;
     }
+    public int getSize()
+    {
+        return this.offset;
+    }
 
     private void reallocate(int length)
     {
