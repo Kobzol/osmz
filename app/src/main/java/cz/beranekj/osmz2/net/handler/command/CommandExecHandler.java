@@ -43,7 +43,23 @@ public class CommandExecHandler implements RequestHandler
             throw new ServerException(400);
         }
 
-        Process process = Runtime.getRuntime().exec(command);
+        RuntimeResult result = new RuntimeResult("", "", -1, -1);
+
+        try
+        {
+            Process process = Runtime.getRuntime().exec(command);
+            result = this.communicate(process, stdin);
+        }
+        catch (IOException e)
+        {
+            result.status = -2;
+        }
+
+        this.writeResult(response, result);
+    }
+
+    private RuntimeResult communicate(Process process, String stdin)
+    {
         String stdout = "";
         String stderr = "";
         int state = -1;
@@ -89,13 +105,18 @@ public class CommandExecHandler implements RequestHandler
             e.printStackTrace();
         }
 
+        return new RuntimeResult(stdout, stderr, returnValue, state);
+    }
+
+    private void writeResult(Response response, RuntimeResult result) throws ServerException
+    {
         JSONObject obj = new JSONObject();
         try
         {
-            obj.put("state", state);
-            obj.put("result", returnValue);
-            obj.put("stdout", stdout);
-            obj.put("stderr", stderr);
+            obj.put("state", result.getStatus());
+            obj.put("result", result.getExitCode());
+            obj.put("stdout", result.getStdout());
+            obj.put("stderr", result.getStderr());
             response.getBody().write(obj.toString(4));
         }
         catch (JSONException e)
@@ -104,5 +125,41 @@ public class CommandExecHandler implements RequestHandler
         }
 
         response.getHeaders().put("Content-Type", "application/json; charset=utf-8");
+    }
+
+    private class RuntimeResult
+    {
+        private String stdout;
+        private String stderr;
+        private int exitCode;
+        private int status;
+
+        private RuntimeResult(String stdout, String stderr, int exitCode, int status)
+        {
+            this.stdout = stdout;
+            this.stderr = stderr;
+            this.exitCode = exitCode;
+            this.status = status;
+        }
+
+        String getStdout()
+        {
+            return this.stdout;
+        }
+
+        String getStderr()
+        {
+            return this.stderr;
+        }
+
+        int getExitCode()
+        {
+            return this.exitCode;
+        }
+
+        int getStatus()
+        {
+            return this.status;
+        }
     }
 }
