@@ -110,7 +110,14 @@ public class ServeSDHandler implements RequestHandler
         for (File file : files)
         {
             String path = this.stripRoot(root, file.getAbsolutePath());
-            html += "<li><a href='" + path + "'>" + path + "</a></li>";
+            String name = path;
+
+            if (file.isFile())
+            {
+                name += " (" + file.length() + " bytes)";
+            }
+
+            html += "<li><a href='" + path + "'>" + name + "</a></li>";
         }
 
         html += "</ul></body></html>";
